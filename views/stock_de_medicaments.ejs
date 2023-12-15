@@ -1,3 +1,5 @@
+<!-- Stock de médicaments - index.ejs -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -41,39 +43,89 @@
         </nav>
 
         <div class="flex-grow overflow-y-auto p-4">
-            <h1 class="text-2xl font-bold mb-40 underline">Stock de médicaments</h1>
+            <h1 class="text-2xl font-bold mb-4">Stock de médicaments</h1>
             
             <!-- Formulaire pour ajouter un médicament -->
-            <form class="mb-4 flex">
+            <form id="ajoutMedicamentForm" class="mb-4 flex">
                 <div class="mr-4">
                     <input type="text" placeholder="Nom du médicament"
-                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="nomMedicament">
                 </div>
                 <div class="mr-4">
                     <input type="number" placeholder="Stock disponible"
-                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="stockDisponible">
                 </div>
                 <button type="button"
-                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600">
+                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600" onclick="ajouterMedicament()">
                     Ajouter
                 </button>
             </form>
 
             <!-- Sélection du médicament pour modifier le stock -->
-            <div class="flex">
-                <select class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+            <div id="modificationStock" class="flex">
+                <select class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="selectMedicament">
                     <!-- Options de la liste déroulante seront ajoutées dynamiquement -->
                 </select>
                 <input type="number" placeholder="Nouveau stock"
-                    class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                    class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="nouveauStock">
                 <button type="button"
-                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600">
+                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600" onclick="modifierStock()">
                     Confirmer
                 </button>
             </div>
             
         </div>
     </div>
+
+    <script>
+        // Fonction pour ajouter un médicament
+        function ajouterMedicament() {
+            const nomMedicament = document.getElementById('nomMedicament').value;
+            const stockDisponible = document.getElementById('stockDisponible').value;
+
+            // Envoie les données au serveur
+            fetch('/ajouter_medicament', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify([{ nomMedicament, stockDisponible }]),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
+                console.log(data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+
+
+
+        // Fonction pour modifier le stock d'un médicament
+        function modifierStock() {
+            const selectedMedicament = document.getElementById('selectMedicament').value;
+            const nouveauStock = document.getElementById('nouveauStock').value;
+
+            // Envoie les données au serveur
+            fetch('/modifier_stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ selectedMedicament, nouveauStock }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
+                console.log(data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+    </script>
 </body>
 
 </html>

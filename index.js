@@ -17,8 +17,9 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
+
 
 // Configuration de l'application
 app.set('view engine', 'ejs');
@@ -30,6 +31,22 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
+// Création des modèles mongoose
+
+const stockSchema = new mongoose.Schema({
+  quantite: Number
+});
+
+const Stock = mongoose.model('stock', stockSchema); 
+
+const medicamentSchema = new mongoose.Schema({
+  nom: String,
+  stock_id: { type: mongoose.Schema.Types.ObjectId, ref: 'stock' } 
+});
+
+const Medicament = mongoose.model('medicament', medicamentSchema); 
+
 
 // Définir les chemins des images
 app.locals.loupe = loupe;
@@ -82,54 +99,75 @@ app.post('/connexion', async (req, res) => {
   }
 });
 
+// Ajouter des médicaments
+app.post('/ajouter_medicament', async (req, res) => {
 
-app.get('/client/:clientId', async (req, res) => {
-  const clientId = req.params.clientId;
+  const medicaments = req.body;
+
+  console.log(medicaments);
+  console.log(medicaments.map(medicament => ({ quantite: medicament.stockDisponible })));
+
+  //dataStock = {
+    //quantite: medicament.stockDisponible
+  //}
+
+  //Stock.insertMany([data])
+
+});
+
+/* Ajouter des médicaments
+app.post('/ajouter_medicament', async (req, res) => {
+  const medicaments = req.body;
+
+  console.log(medicaments);
 
   try {
-    // Sélectionnez la collection de clients
-    const collection = client.db("pharmaciedb").collection("client");
-
-    // Recherchez le client par ID
-    const client = await collection.findOne({ _id: ObjectId(clientId) });
-
-    if (!client) {
-      return res.status(404).json({ message: 'Client not found' });
+    if (!medicaments || !Array.isArray(medicaments)) {
+      return res.status(400).json({ message: 'Les données sont incorrectes' });
     }
 
-    // Renvoyez les détails du client
-    res.status(200).json(client);
+    const stocks = medicaments.map(medicament => ({ quantite: medicament.stockDisponible }));
+    
+    try {
+      const savedStocks = await Stock.insertMany(stocks);
+      console.log(savedStocks);
+
+      const medicamentDocs = savedStocks.ops.map((savedStock, index) => ({
+        nom: medicaments[index].nomMedicament,
+        stock_id: savedStock._id
+      }));
+
+      console.log(medicamentDocs);
+
+      const savedMedicaments = await Medicament.insertMany(medicamentDocs);
+
+      console.log(savedMedicaments);
+
+      res.status(201).json(savedMedicaments);
+    } catch (error) {
+      console.error("Error inserting stocks:", error);
+      res.status(500).json({ message: 'Error inserting stocks', error: error.message });
+    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: error.message });
   }
 });
-
-// Ajoutez cette route avant la définition de votre route pour gérer les traitements
-app.get('/clients', async (req, res) => {
-  try {
-    const collection = client.db("pharmaciedb").collection("client");
-    const clients = await collection.find().toArray();
-    res.json(clients);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des clients:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+*/
 
 
+// Connexion à la base de données MongoDB
 async function run() {
   try {
     await client.connect();
     await client.db("pharmaciedb").command({ ping: 1 });
     console.log("La BDD est connectée");
   } finally {
-
+    // Actions à effectuer après la connexion à la base de données, si nécessaire
   }
 }
 
+// Démarrage de l'application et écoute du port spécifié
 run().catch(console.dir);
-
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Le serveur est en cours d'exécution à http://localhost:${port}`);
 });
