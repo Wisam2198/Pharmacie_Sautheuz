@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 
 <head>
   <meta charset="UTF-8">
@@ -10,6 +10,7 @@
 
 <body class="bg-gray-100 m-0 overflow-hidden">
 
+  <!-- Barre de navigation -->
   <nav class="bg-green-500 p-4 flex justify-between items-center text-white">
     <div>
       <span class="text-lg font-bold">Pharmacie Sautheuz</span>
@@ -24,14 +25,15 @@
     </div>
   </nav>
 
+  <!-- Image de fond de la pharmacie -->
   <img src="<%= bgpharma %>" alt="Background pharmacie" class="w-full h-screen object-cover">
 
-
+  <!-- Fenêtre d'authentification -->
   <div id="authentification"
     class="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-    <div
-      class="bg-gradient-to-r from-blue-600 to-green-400 p-6 rounded border border-500 border-black w-1/4 h-1/3 flex flex-col relative">
-      <img src="<%= croix %>" alt="Fermer" class="absolute top-4 right-4 w-6 h-6 cursor-pointer" id="btnFermerFenetre">
+    <div class="bg-gradient-to-r from-blue-600 to-green-400 p-6 rounded border border-500 border-black w-1/4 h-1/3 flex flex-col relative">
+      <img src="<%= croix %>" alt="Fermer" class="absolute top-4 right-4 w-6 h-6 cursor-pointer"
+        id="btnFermerFenetre">
       <p class="text-center">Authentification</p><br>
       <div class="text-center">
         <form id="connexionForm">
@@ -40,7 +42,8 @@
           <input type="password" id="mdp" placeholder="mot de passe..."
             class="border border-black rounded px-2 py-1 mb-4"><br><br>
           <div class="mt-auto">
-            <button type="button" id="btnConnexion" class="bg-green-500 text-white px-4 py-2 rounded" onclick="connexionUtilisateur()">Connexion</button>
+            <button type="button" id="btnConnexion" class="bg-green-500 text-white px-4 py-2 rounded"
+              onclick="connexionUtilisateur()">Connexion</button>
             <button id="btnInscrire" class="bg-blue-500 text-white px-4 py-2 rounded">S'inscrire</button>
           </div>
         </form>
@@ -48,69 +51,62 @@
     </div>
   </div>
 
+  <!-- Bouton de déconnexion ou d'authentification -->
   <div class="fixed bottom-0 right-0 p-4">
     <% if (utilisateur) { %>
       <form id="formDeconnexion" method="post" action="/deconnexion">
         <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Déconnexion</button>
       </form>
     <% } else { %>
-      <button id="btnOuvrirFenetre" class="relative group overflow-hidden px-6 h-12 rounded-full flex space-x-2 items-center bg-gradient-to-r from-blue-900 to-green-500 hover:to-blue-600">
+      <button id="btnOuvrirFenetre"
+        class="relative group overflow-hidden px-6 h-12 rounded-full flex space-x-2 items-center bg-gradient-to-r from-blue-900 to-green-500 hover:to-blue-600">
         <span class="relative text-sm text-white">Authentification</span>
       </button>
     <% } %>
   </div>
 
+  <!-- Script pour gérer l'affichage de la fenêtre d'authentification -->
   <% if (!utilisateur) { %>
     <script>
+      const ouvrirFenetre = document.getElementById('btnOuvrirFenetre');
+      const fermerFenetre = document.getElementById('btnFermerFenetre');
+      const authentification = document.getElementById('authentification');
+
       ouvrirFenetre.addEventListener('click', () => {
         authentification.classList.remove('hidden');
       });
+
+      fermerFenetre.addEventListener('click', () => {
+        authentification.classList.add('hidden');
+      });
+
+      async function connexionUtilisateur() {
+        const pseudo = document.getElementById('pseudo').value;
+        const mdp = document.getElementById('mdp').value;
+
+        const response = await fetch('http://localhost:3001/connexion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ pseudo, mdp }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          window.history.replaceState({}, document.title, window.location.href);
+        }
+
+        if (response.status === 200) {
+          window.location.href = '/espace_pharmaciens';
+        } else {
+          alert(data.message);
+        }
+      }
     </script>
   <% } %>
 
 </body>
 
 </html>
-
-<script>
-  const ouvrirFenetre = document.getElementById('btnOuvrirFenetre');
-  const fermerFenetre = document.getElementById('btnFermerFenetre');
-  const connexion = document.getElementById('btnConnexion');
-  const inscrire = document.getElementById('btnInscrire');
-  const authentification = document.getElementById('authentification');
-
-  ouvrirFenetre.addEventListener('click', () => {
-    authentification.classList.remove('hidden');
-  });
-
-  fermerFenetre.addEventListener('click', () => {
-    authentification.classList.add('hidden');
-  });
-
-
-  async function connexionUtilisateur() {
-    const pseudo = document.getElementById('pseudo').value;
-    const mdp = document.getElementById('mdp').value;
-
-    const response = await fetch('http://localhost:3000/connexion', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ pseudo, mdp }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      window.history.replaceState({}, document.title, window.location.href);
-    }
-
-    if (response.status === 200) {
-      window.location.href = '/espace_pharmaciens';
-    } else {
-      alert(data.message);
-    }
-  }
-
-</script>

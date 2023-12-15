@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.css">
-    <title>Espace pharmaciens</title>
+    <title>Stock de médicaments</title>
 </head>
 
 <body>
@@ -41,8 +41,37 @@
         </nav>
 
         <div class="flex-grow overflow-y-auto p-4">
-            <h1 class="text-2xl font-bold mb-4">Espace pharmaciens</h1>
-            <!-- Le contenu de la gestion des traitements sera ajouté ici -->
+            <h1 class="text-2xl font-bold mb-4">Stock de médicaments</h1>
+            
+            <!-- Formulaire pour ajouter un médicament -->
+            <form class="mb-4 flex">
+                <div class="mr-4">
+                    <input type="text" placeholder="Nom du médicament"
+                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                </div>
+                <div class="mr-4">
+                    <input type="number" placeholder="Stock disponible"
+                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                </div>
+                <button type="button"
+                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600">
+                    Ajouter
+                </button>
+            </form>
+
+            <!-- Sélection du médicament pour modifier le stock -->
+            <div class="flex">
+                <select class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                    <!-- Options de la liste déroulante seront ajoutées dynamiquement -->
+                </select>
+                <input type="number" placeholder="Nouveau stock"
+                    class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+                <button type="button"
+                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600">
+                    Confirmer
+                </button>
+            </div>
+            
         </div>
     </div>
 </body>
