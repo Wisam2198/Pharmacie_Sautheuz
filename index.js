@@ -64,13 +64,23 @@ app.post('/deconnexion', (req, res) => {
   });
 });
 
-
 app.get('/espace_pharmaciens', (req, res) => {
   
   
   if (req.session.utilisateur) {
     const loupe = '/image/loupe.png';
     res.render('espace_pharmaciens', {loupe});
+  } else {
+    res.redirect('/');
+  }
+});
+
+app.get('/gestion_des_traitements', (req, res) => {
+  
+  
+  if (req.session.utilisateur) {
+    const loupe = '/image/loupe.png';
+    res.render('gestion_des_traitements', {loupe});
   } else {
     res.redirect('/');
   }
