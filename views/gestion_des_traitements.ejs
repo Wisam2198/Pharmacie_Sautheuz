@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.css">
     <title>Gestion des traitements</title>
 </head>
-
 <body>
     <div class="bg-gray-100 m-0 overflow-hidden">
         <!-- Barre de navigation horizontale -->
@@ -26,25 +24,64 @@
         </nav>
     </div>
 
+    
     <div class="flex">
         <!-- Barre de navigation verticale -->
         <nav class="bg-blue-900 text-white p-4 flex-shrink-0 w-1/6 h-screen overflow-y-auto">
-            <a href="/espace_pharmaciens" class="block px-4 py-2 flex-grow text-lg">Espace Pharmacien</a><br><br>
-            <a href="/gestion_des_traitements" class="block px-4 py-2 flex-grow text-lg">Gestion des Traitements</a><br><br>
-            <a href="/stock_de_medicaments" class="block px-4 py-2 flex-grow text-lg">Stock de Médicaments</a><br><br>
-            <a href="/contact" class="block px-4 py-2 flex-grow text-lg">Contact</a><br><br>
-            <a href="/a_propos" class="block px-4 py-1 flex-grow text-lg">À Propos</a><br><br>
-            <a href="/faq" class="block px-4 py-2 flex-grow text-lg">FAQ</a><br><br>
-            <a href="/conditions_utilisation" class="block px-4 py-2 flex-grow text-lg">Conditions d'Utilisation</a><br><br>
-            <a href="/politique_confidentialite" class="block px-4 py-2 flex-grow text-lg">Politique de Confidentialité</a><br><br>
+            <a href="/espace_pharmaciens" class="block px-4 py-2 flex-grow text-lg">Espace Pharmacien</a></br></br>
+            <a href="/gestion_des_traitements" class="block px-4 py-2 flex-grow text-lg">Gestion des Traitements</a></br></br>
+            <a href="/stock_de_medicaments" class="block px-4 py-2 flex-grow text-lg">Stock de Médicaments</a></br></br>
+            <a href="/contact" class="block px-4 py-2 flex-grow text-lg">Contact</a></br></br>
+            <a href="/a_propos" class="block px-4 py-1 flex-grow text-lg">À Propos</a></br></br>
+            <a href="/faq" class="block px-4 py-2 flex-grow text-lg">FAQ</a></br></br>
+            <a href="/conditions_utilisation" class="block px-4 py-2 flex-grow text-lg">Conditions d'Utilisation</a></br></br>
+            <a href="/politique_confidentialite" class="block px-4 py-2 flex-grow text-lg">Politique de Confidentialité</a></br></br>
             <a href="/deconnexion" class="block px-4 py-2 flex-grow text-lg">Déconnexion</a>
         </nav>
 
+       
         <div class="flex-grow overflow-y-auto p-4">
-            <h1 class="text-2xl font-bold mb-4">Gestion des traitements</h1>
-            <!-- Le contenu de la gestion des traitements sera ajouté ici -->
+            <h1 class="text-2xl font-bold mb-40 underline">Gestion des traitements</h1>
+
+            <div class="bg-gray-100 p-60 shadow-md mb-4 rounded-md flex items-start">
+                <select id="selectClient" class="p-2 border border-gray-300 rounded-md mr-20"></select>
+                <button onclick="gererTraitements()" class="bg-gray-400 p-2 rounded-md">Gérer ses traitements</button>
+            </div>            
+
         </div>
     </div>
-</body>
+    <script>
+        // Fonction pour charger les clients dans la liste déroulante
+  async function chargerClients() {
+    const selectClient = document.getElementById('selectClient');
 
+    try {
+      const response = await fetch('/clients'); // Utilisez la nouvelle route pour récupérer la liste des clients
+      const clients = await response.json();
+
+      // Ajoutez chaque client comme une option dans la liste déroulante
+      clients.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client._id;
+        option.textContent = `${client.nom} ${client.prenom}`;
+        selectClient.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des clients:', error);
+    }
+  }
+    
+        // Fonction appelée lorsque le bouton est cliqué
+        function gererTraitements() {
+            const selectClient = document.getElementById('selectClient');
+            const selectedClientId = selectClient.value;
+    
+            // Redirigez l'utilisateur vers la page de gestion des traitements avec l'ID du client
+            window.location.href = `/gerer_traitements/${selectedClientId}`;
+        }
+    
+        // Chargez les clients lors du chargement de la page
+        window.onload = chargerClients;
+    </script>
+</body>
 </html>

@@ -82,19 +82,54 @@ app.post('/connexion', async (req, res) => {
   }
 });
 
-// Connexion à la base de données MongoDB
+
+app.get('/client/:clientId', async (req, res) => {
+  const clientId = req.params.clientId;
+
+  try {
+    // Sélectionnez la collection de clients
+    const collection = client.db("pharmaciedb").collection("client");
+
+    // Recherchez le client par ID
+    const client = await collection.findOne({ _id: ObjectId(clientId) });
+
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+
+    // Renvoyez les détails du client
+    res.status(200).json(client);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Ajoutez cette route avant la définition de votre route pour gérer les traitements
+app.get('/clients', async (req, res) => {
+  try {
+    const collection = client.db("pharmaciedb").collection("client");
+    const clients = await collection.find().toArray();
+    res.json(clients);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des clients:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 async function run() {
   try {
     await client.connect();
     await client.db("pharmaciedb").command({ ping: 1 });
     console.log("La BDD est connectée");
   } finally {
-    // Actions à effectuer après la connexion à la base de données, si nécessaire
+
   }
 }
 
-// Démarrage de l'application et écoute du port spécifié
 run().catch(console.dir);
+
 app.listen(port, () => {
-  console.log(`Le serveur est en cours d'exécution à http://localhost:${port}`);
+  console.log(`Server is running at http://localhost:${port}`);
 });
