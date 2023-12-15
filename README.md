@@ -1,2 +1,1 @@
-##npm install
-il faut créer un dossier route et models
+>npm install | Pour avoir les modules (Obligatoire !)
