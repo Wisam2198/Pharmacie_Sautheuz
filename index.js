@@ -33,7 +33,6 @@ app.use(session({
 }));
 
 // Création des modèles mongoose
-
 const stockSchema = new mongoose.Schema({
   quantite: Number
 });
@@ -101,58 +100,38 @@ app.post('/connexion', async (req, res) => {
 
 // Ajouter des médicaments
 app.post('/ajouter_medicament', async (req, res) => {
-
-  const medicaments = req.body;
-
-  console.log(medicaments);
-  console.log(medicaments.map(medicament => ({ quantite: medicament.stockDisponible })));
-
-  //dataStock = {
-    //quantite: medicament.stockDisponible
-  //}
-
-  //Stock.insertMany([data])
-
-});
-
-/* Ajouter des médicaments
-app.post('/ajouter_medicament', async (req, res) => {
-  const medicaments = req.body;
-
-  console.log(medicaments);
+  const { stockDisponible, nomMedicament } = req.body[0];
 
   try {
-    if (!medicaments || !Array.isArray(medicaments)) {
-      return res.status(400).json({ message: 'Les données sont incorrectes' });
-    }
+    // Se connecter à la base de données
+    const database = client.db("pharmaciedb");
 
-    const stocks = medicaments.map(medicament => ({ quantite: medicament.stockDisponible }));
-    
-    try {
-      const savedStocks = await Stock.insertMany(stocks);
-      console.log(savedStocks);
+    // Créer un nouvel objet Stock avec la quantité disponible fournie dans la requête
+    const newStock = { quantite: stockDisponible };
 
-      const medicamentDocs = savedStocks.ops.map((savedStock, index) => ({
-        nom: medicaments[index].nomMedicament,
-        stock_id: savedStock._id
-      }));
+    // Insérer le nouvel objet Stock dans la collection "stock"
+    const stockCollection = database.collection('stock');
+    const stockResult = await stockCollection.insertOne(newStock);
 
-      console.log(medicamentDocs);
+    // Créer un nouvel objet Medicament avec le nom et l'ID du stock nouvellement créé
+    const newMedicament = {
+      nom: nomMedicament,
+      stock_id: stockResult.insertedId,
+    };
 
-      const savedMedicaments = await Medicament.insertMany(medicamentDocs);
+    // Insérer le nouvel objet Medicament dans la collection "medicament"
+    const medicamentCollection = database.collection('medicament');
+    await medicamentCollection.insertOne(newMedicament);
 
-      console.log(savedMedicaments);
-
-      res.status(201).json(savedMedicaments);
-    } catch (error) {
-      console.error("Error inserting stocks:", error);
-      res.status(500).json({ message: 'Error inserting stocks', error: error.message });
-    }
+    res.status(201).json({ message: 'Médicament ajouté avec succès' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du médicament' });
   }
 });
-*/
+
+
+
 
 
 // Connexion à la base de données MongoDB
@@ -161,6 +140,9 @@ async function run() {
     await client.connect();
     await client.db("pharmaciedb").command({ ping: 1 });
     console.log("La BDD est connectée");
+  } catch (error) {
+    console.error("Erreur de connexion à MongoDB :", error);
+    throw error; // Ajoute cette ligne pour propager l'erreur
   } finally {
     // Actions à effectuer après la connexion à la base de données, si nécessaire
   }
