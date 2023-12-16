@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -18,8 +17,8 @@ const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   },
+  connectTimeoutMS: 30000,
 });
-
 
 // Configuration de l'application
 app.set('view engine', 'ejs');
@@ -37,15 +36,14 @@ const stockSchema = new mongoose.Schema({
   quantite: Number
 });
 
-const Stock = mongoose.model('stock', stockSchema); 
+const Stock = mongoose.model('stock', stockSchema);
 
 const medicamentSchema = new mongoose.Schema({
   nom: String,
-  stock_id: { type: mongoose.Schema.Types.ObjectId, ref: 'stock' } 
+  stock_id: { type: mongoose.Schema.Types.ObjectId, ref: 'stock' }
 });
 
-const Medicament = mongoose.model('medicament', medicamentSchema); 
-
+const Medicament = mongoose.model('medicament', medicamentSchema);
 
 // Définir les chemins des images
 app.locals.loupe = loupe;
@@ -79,6 +77,26 @@ app.get('/', (req, res) => {
   res.redirect('/accueil');
 });
 
+app.get('/liste_medicaments', async (req, res) => {
+  try {
+    const db = client.db('pharmaciedb');
+    const collection = db.collection('medicament');
+    const listeMedicaments = await collection.find({}).toArray();
+
+    // Transformation de la liste
+    const formattedList = listeMedicaments.map(medicament => ({
+      nom: medicament.nom,
+    }));
+
+    // Envoi de la liste transformée
+    res.status(200).json(formattedList);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la liste des médicaments:", error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération de la liste des médicaments', error: error.message });
+  }
+});
+
+
 // Connexion de l'utilisateur
 app.post('/connexion', async (req, res) => {
   const { pseudo, mdp } = req.body;
@@ -101,35 +119,43 @@ app.post('/connexion', async (req, res) => {
 // Ajouter des médicaments
 app.post('/ajouter_medicament', async (req, res) => {
   const { stockDisponible, nomMedicament } = req.body[0];
+  let stockResult;
+  let database;
 
   try {
-    // Se connecter à la base de données
-    const database = client.db("pharmaciedb");
+    database = client.db("pharmaciedb");
 
-    // Créer un nouvel objet Stock avec la quantité disponible fournie dans la requête
-    const newStock = { quantite: stockDisponible };
+    const newStock = new Stock({ quantite: parseInt(stockDisponible) });
 
-    // Insérer le nouvel objet Stock dans la collection "stock"
     const stockCollection = database.collection('stock');
-    const stockResult = await stockCollection.insertOne(newStock);
+    await stockCollection.createIndex({ quantite: 1 });
 
-    // Créer un nouvel objet Medicament avec le nom et l'ID du stock nouvellement créé
-    const newMedicament = {
+    stockResult = await stockCollection.insertOne(newStock);
+    console.log("Stock ajouté avec succès:", stockResult);
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du stock:", error.message);
+    return res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du stock', error: error.message });
+  }
+
+  try {
+
+    const newMedicament = new Medicament({
       nom: nomMedicament,
       stock_id: stockResult.insertedId,
-    };
+    });
 
-    // Insérer le nouvel objet Medicament dans la collection "medicament"
     const medicamentCollection = database.collection('medicament');
-    await medicamentCollection.insertOne(newMedicament);
+    await medicamentCollection.createIndex({ nom: 1 });
+
+    const medicamentResult = await medicamentCollection.insertOne(newMedicament);
+    console.log("Médicament ajouté avec succès:", medicamentResult);
 
     res.status(201).json({ message: 'Médicament ajouté avec succès' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du médicament' });
+    console.error("Erreur lors de l'ajout du médicament:", error.message);
+    res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du médicament', error: error.message });
   }
 });
-
 
 
 
@@ -142,9 +168,9 @@ async function run() {
     console.log("La BDD est connectée");
   } catch (error) {
     console.error("Erreur de connexion à MongoDB :", error);
-    throw error; // Ajoute cette ligne pour propager l'erreur
+    throw error; 
   } finally {
-    // Actions à effectuer après la connexion à la base de données, si nécessaire
+
   }
 }
 

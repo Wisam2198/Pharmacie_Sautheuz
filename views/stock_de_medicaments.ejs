@@ -78,6 +78,40 @@
     </div>
 
     <script>
+        // Fonction pour charger la liste des médicaments
+        function chargerListeMedicaments() {
+            // Récupère la liste des médicaments depuis le serveur
+            fetch('/liste_medicaments')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP! Statut: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(listeMedicaments => {
+                    const selectMedicament = document.getElementById('selectMedicament');
+
+                    // Vide la liste déroulante
+                    selectMedicament.innerHTML = "";
+
+                    // Ajoute chaque médicament à la liste déroulante
+                    listeMedicaments.forEach(medicament => {
+                        const option = document.createElement("option");
+                        option.text = medicament.nom;
+                        option.value = medicament.nom;
+                        selectMedicament.add(option);
+                    });
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la récupération de la liste des médicaments:", error);
+                });
+        }
+
+
+        // Appelle la fonction au chargement de la page
+        window.onload = chargerListeMedicaments;
+
+
         // Fonction pour ajouter un médicament
         function ajouterMedicament() {
             const nomMedicament = document.getElementById('nomMedicament').value;
@@ -95,13 +129,14 @@
             .then(data => {
                 // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
                 console.log(data);
+                
+                // Redirige l'utilisateur côté client
+                window.location.href = '/stock_de_medicaments';
             })
             .catch(error => {
                 console.error(error);
             });
         }
-
-
 
         // Fonction pour modifier le stock d'un médicament
         function modifierStock() {
