@@ -4,7 +4,7 @@ const cors = require('cors');
 const session = require('express-session');
 const app = express();
 const port = 3001;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://tazeredplus:root@pharmaciedb.sl1lu8p.mongodb.net/?retryWrites=true&w=majority";
 const loupe = '/image/loupe.png';
 const bgpharma = '/image/bg-pharma.jpg';
@@ -116,6 +116,34 @@ app.post('/connexion', async (req, res) => {
   }
 });
 
+// Deconnexion de l'utilisateur
+app.get('/deconnexion', (req, res) => {
+  // Déconnecter l'utilisateur en détruisant la session
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Erreur lors de la déconnexion :', err);
+      res.status(500).json({ message: 'Erreur serveur lors de la déconnexion', error: err.message });
+    } else {
+      // Rediriger vers la page d'accueil après la déconnexion
+      res.redirect('/accueil');
+    }
+  });
+});
+
+// Route POST pour /deconnexion
+app.post('/deconnexion', (req, res) => {
+  // Déconnecter l'utilisateur en détruisant la session
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Erreur lors de la déconnexion :', err);
+      res.status(500).json({ message: 'Erreur serveur lors de la déconnexion', error: err.message });
+    } else {
+      // Rediriger vers la page d'accueil après la déconnexion
+      res.redirect('/accueil');
+    }
+  });
+});
+
 // Ajouter des médicaments
 app.post('/ajouter_medicament', async (req, res) => {
   const { stockDisponible, nomMedicament } = req.body[0];
@@ -157,7 +185,90 @@ app.post('/ajouter_medicament', async (req, res) => {
   }
 });
 
+// Modifier le stock
+app.post('/modifier_stock', async (req, res) => {
+  const { nouveauStock, selectedMedicament } = req.body;
+  let database;
 
+  try {
+    database = client.db("pharmaciedb");
+
+    // Trouver le stock_id du médicament sélectionné
+    const medicamentCollection = database.collection('medicament');
+    const selectedMedicamentInfo = await medicamentCollection.findOne({ nom: selectedMedicament });
+
+    if (!selectedMedicamentInfo) {
+      return res.status(404).json({ message: 'Médicament non trouvé' });
+    }
+
+    const stock_id = selectedMedicamentInfo.stock_id;
+
+    // Mettre à jour la quantité du stock
+    const stockCollection = database.collection('stock');
+    const result = await stockCollection.updateOne(
+      { _id: stock_id },
+      { $set: { quantite: parseInt(nouveauStock) } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(500).json({ message: 'Erreur lors de la mise à jour du stock' });
+    }
+
+    res.status(200).json({ message: 'Stock modifié avec succès' });
+  } catch (error) {
+    console.error("Erreur lors de la modification du stock:", error.message);
+    res.status(500).json({ message: 'Erreur serveur lors de la modification du stock', error: error.message });
+  }
+});
+
+// App pour supprimer un médicament et son stock associé
+app.delete('/supprimer_medicament', async (req, res) => {
+  const selectedMedicament = req.body.selectedMedicament;
+  console.log(selectedMedicament);
+
+  let database;
+
+  try {
+    database = client.db("pharmaciedb");
+
+    // Supprime le médicament associé au stock
+    const medicamentCollection = database.collection('medicament');
+    const stockCollection = database.collection('stock');
+
+    const medicamentResult = await medicamentCollection.findOne({ nom: selectedMedicament });
+
+    if (medicamentResult) {
+      const stockId = medicamentResult.stock_id;
+
+      // Maintenant, supprime le stock
+      const stockResult = await stockCollection.deleteOne({ _id: new ObjectId(stockId) });
+
+      if (stockResult.deletedCount === 1) {
+        // Stock supprimé avec succès
+
+        // Maintenant, supprime le médicament
+        const medicamentDeleteResult = await medicamentCollection.deleteOne({ nom: selectedMedicament });
+
+        if (medicamentDeleteResult.deletedCount === 1) {
+          // Médicament supprimé avec succès
+          res.status(200).json({ message: 'Médicament et stock supprimés avec succès' });
+        } else {
+          // Échec de la suppression du médicament
+          res.status(500).json({ message: 'Erreur serveur lors de la suppression du médicament' });
+        }
+      } else {
+        // Échec de la suppression du stock
+        res.status(500).json({ message: 'Erreur serveur lors de la suppression du stock' });
+      }
+    } else {
+      // Le médicament n'a pas été trouvé
+      res.status(404).json({ message: 'Médicament non trouvé' });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la suppression du médicament et du stock:", error.message);
+    res.status(500).json({ message: 'Erreur serveur lors de la suppression du médicament et du stock', error: error.message });
+  }
+});
 
 
 // Connexion à la base de données MongoDB

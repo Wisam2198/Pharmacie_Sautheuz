@@ -49,11 +49,11 @@
             <form id="ajoutMedicamentForm" class="mb-4 flex">
                 <div class="mr-4">
                     <input type="text" placeholder="Nom du médicament"
-                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="nomMedicament">
+                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="nomMedicament" required>
                 </div>
                 <div class="mr-4">
                     <input type="number" placeholder="Stock disponible"
-                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="stockDisponible">
+                        class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="stockDisponible" required>
                 </div>
                 <button type="button"
                     class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600" onclick="ajouterMedicament()">
@@ -63,14 +63,18 @@
 
             <!-- Sélection du médicament pour modifier le stock -->
             <div id="modificationStock" class="flex">
-                <select class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="selectMedicament">
+                <select class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="selectMedicament" required>
                     <!-- Options de la liste déroulante seront ajoutées dynamiquement -->
                 </select>
                 <input type="number" placeholder="Nouveau stock"
-                    class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="nouveauStock">
+                    class="mr-4 px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black" id="nouveauStock" required>
                 <button type="button"
                     class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600" onclick="modifierStock()">
                     Confirmer
+                </button>
+                <button type="button"
+                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600" onclick="supprimerMedicament()">
+                    Supprimer
                 </button>
             </div>
             
@@ -78,6 +82,7 @@
     </div>
 
     <script>
+
         // Fonction pour charger la liste des médicaments
         function chargerListeMedicaments() {
             // Récupère la liste des médicaments depuis le serveur
@@ -117,19 +122,89 @@
             const nomMedicament = document.getElementById('nomMedicament').value;
             const stockDisponible = document.getElementById('stockDisponible').value;
 
-            // Envoie les données au serveur
-            fetch('/ajouter_medicament', {
-                method: 'POST',
+            if (!nomMedicament || !stockDisponible) {
+                alert('Veuillez remplir tous les champs obligatoires.');
+                return false; // Empêche la soumission du formulaire
+            } else if (stockDisponible < 0) {
+                alert('Vous ne pouvez pas entrer une valeur négative.');
+                return false; // Empêche la soumission du formulaire
+            } else {
+                // Envoie les données au serveur
+                fetch('/ajouter_medicament', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([{ nomMedicament, stockDisponible }]),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
+                    console.log(data);
+                    
+                    // Redirige l'utilisateur côté client
+                    window.location.href = '/stock_de_medicaments';
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            }
+        }
+
+        // Fonction pour modifier le stock d'un médicament
+        function modifierStock() {
+            const selectedMedicament = document.getElementById('selectMedicament').value;
+            const nouveauStock = document.getElementById('nouveauStock').value;
+
+            if (!selectedMedicament || !nouveauStock) {
+                alert('Veuillez remplir tous les champs obligatoires.');
+                return false; // Empêche la soumission du formulaire
+            } else if (nouveauStock < 0) {
+                alert('Vous ne pouvez pas entrer une valeur négative.');
+                return false; // Empêche la soumission du formulaire
+            } else {
+                // Envoie les données au serveur
+                fetch('/modifier_stock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selectedMedicament, nouveauStock }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
+                    console.log(data);
+
+                    // Redirige l'utilisateur côté client
+                    window.location.href = '/stock_de_medicaments';
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            }
+        }
+
+        // Fonction pour supprimer un stock et le médicament associé
+        function supprimerMedicament() {
+
+            const selectedMedicament = document.getElementById('selectMedicament').value;
+            console.log(selectedMedicament);
+
+            // Envoie la requête au serveur pour supprimer le stock et le médicament associé
+            fetch(`/supprimer_medicament`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify([{ nomMedicament, stockDisponible }]),
+                body: JSON.stringify({ selectedMedicament }),
             })
             .then(response => response.json())
             .then(data => {
-                // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
+                // Traite la réponse du serveur (par exemple, actualise l'affichage des stocks et médicaments)
                 console.log(data);
-                
+                // Actualise l'affichage des stocks et médicaments ou effectue d'autres actions nécessaires
+            
                 // Redirige l'utilisateur côté client
                 window.location.href = '/stock_de_medicaments';
             })
@@ -138,28 +213,6 @@
             });
         }
 
-        // Fonction pour modifier le stock d'un médicament
-        function modifierStock() {
-            const selectedMedicament = document.getElementById('selectMedicament').value;
-            const nouveauStock = document.getElementById('nouveauStock').value;
-
-            // Envoie les données au serveur
-            fetch('/modifier_stock', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ selectedMedicament, nouveauStock }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Traite la réponse du serveur (par exemple, actualise la liste des médicaments)
-                console.log(data);
-            })
-            .catch(error => {
-                console.error(error);
-            });
-        }
     </script>
 </body>
 
