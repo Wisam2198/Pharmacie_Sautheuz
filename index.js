@@ -10,6 +10,7 @@ const loupe = '/image/loupe.png';
 const bgpharma = '/image/bg-pharma.jpg';
 const croix = '/image/croix.png';
 
+
 // Connexion à MongoDB
 const client = new MongoClient(uri, {
   serverApi: {
@@ -96,7 +97,6 @@ app.get('/liste_medicaments', async (req, res) => {
   }
 });
 
-
 // Connexion de l'utilisateur
 app.post('/connexion', async (req, res) => {
   const { pseudo, mdp } = req.body;
@@ -116,20 +116,6 @@ app.post('/connexion', async (req, res) => {
   }
 });
 
-// Deconnexion de l'utilisateur
-app.get('/deconnexion', (req, res) => {
-  // Déconnecter l'utilisateur en détruisant la session
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Erreur lors de la déconnexion :', err);
-      res.status(500).json({ message: 'Erreur serveur lors de la déconnexion', error: err.message });
-    } else {
-      // Rediriger vers la page d'accueil après la déconnexion
-      res.redirect('/accueil');
-    }
-  });
-});
-
 // Route POST pour /deconnexion
 app.post('/deconnexion', (req, res) => {
   // Déconnecter l'utilisateur en détruisant la session
@@ -142,6 +128,26 @@ app.post('/deconnexion', (req, res) => {
       res.redirect('/accueil');
     }
   });
+});
+
+app.get('/clients', async (req, res) => {
+  try {
+    const db = client.db('pharmaciedb');
+    const collection = db.collection('client');
+    const listeClients = await collection.find({}).toArray();
+
+    // Transformation de la liste
+    const formattedList = listeClients.map(clients => ({
+      nom: clients.nom,
+      prenom: clients.prenom,
+    }));
+
+    // Envoi de la liste transformée
+    res.status(200).json(formattedList);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la liste des clients:", error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération de la liste des clients', error: error.message });
+  }
 });
 
 // Ajouter des médicaments
