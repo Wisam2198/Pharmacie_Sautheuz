@@ -150,6 +150,27 @@ app.get('/clients', async (req, res) => {
   }
 });
 
+// Route GET pour récupérer les informations du client sélectionné
+app.get('/info_client/:nomPrenom', async (req, res) => {
+  const nomPrenom = req.params.nomPrenom;
+
+  try {
+    const db = client.db('pharmaciedb');
+    const collection = db.collection('client');
+    const clientInfo = await collection.findOne({ nom: nomPrenom });
+
+    if (clientInfo) {
+      res.status(200).json({ maladie: clientInfo.maladie });
+    } else {
+      res.status(404).json({ message: 'Client non trouvé' });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la récupération des informations du client:", error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération des informations du client', error: error.message });
+  }
+});
+
+
 // Ajouter des médicaments
 app.post('/ajouter_medicament', async (req, res) => {
   const { stockDisponible, nomMedicament } = req.body[0];
