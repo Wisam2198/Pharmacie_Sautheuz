@@ -73,7 +73,7 @@ app.use(gestionRoutes);
 app.use(politiqueRoutes);
 app.use(stockRoutes);
 
-// Redirection vers /accueil par défaut
+// Redirection vers /accueil par défauts
 app.get('/', (req, res) => {
   res.redirect('/accueil');
 });
