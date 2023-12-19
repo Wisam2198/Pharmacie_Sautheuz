@@ -62,8 +62,8 @@
       class="bg-gradient-to-r from-blue-600 to-green-400 p-6 rounded border border-500 border-black sm:w-1/2 md:w-1/3 lg:w-1/4 sm:h-2/3 md:h-1/2 lg:h-1/3 flex flex-col relative items-center justify-center">
       <img src="<%= croix %>" alt="Fermer" class="absolute top-4 right-4 w-6 h-6 cursor-pointer" id="btnFermerFenetre">
       <p class="text-center mb-4">Traitements de : <span id="gestTraitementsText"></span></p>
-      <p id="maladieLabel">Maladie : </p>
-      <p id="medicamentLabel">Médicament : </p>
+      <p id="maladieLabel"></p>
+      <p id="medicamentLabel"></p>
     </div>
   </div>
 
@@ -86,10 +86,12 @@
       const selectClient = document.getElementById('selectClient');
       const nomPrenom = selectClient.options[selectClient.selectedIndex].text;
       const gestionTraitementsText = document.getElementById('gestTraitementsText');
-      const maladieLabel = document.getElementById('maladieLabel');
+
+      // Extraire le nom et prénom
+      const [nom, prenom] = nomPrenom.split(' ');
 
       // Récupère les informations du client
-      fetch(`/recupClient`)
+      fetch(`/info_client/${nomPrenom}`)
         .then(response => {
           if (!response.ok) {
             throw new Error(`Erreur HTTP! Statut: ${response.status}`);
@@ -98,14 +100,28 @@
         })
         .then(clientInfo => {
           // Met à jour le texte dans la fenêtre modale avec le champ "maladie"
-          gestionTraitementsText.textContent = nomPrenom;
-          maladieLabel.textContent = `Maladie : ${clientInfo.maladie}`;
+          gestionTraitementsText.textContent = `${nomPrenom} - Maladie : ${clientInfo.maladie} `;
+
+      // Récupérer les informations du médicament
+      fetch(`/medicament_info/${nomPrenom}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Erreur HTTP! Statut: ${response.status}`);
+          }
+          return response.json();
         })
+        .then(medicamentInfo => {
+          // Met à jour le texte dans la fenêtre modale avec le champ "médicament"
+           gestionTraitementsText.textContent += ` - Médicament : ${medicamentInfo.nom}`;
+        })
+        .catch(error => {
+          console.error("Erreur lors de la récupération des informations du médicament:", error);
+        });
+      })
         .catch(error => {
           console.error("Erreur lors de la récupération des informations du client:", error);
         });
     }
-
 
     // Fonction pour charger la liste des médicaments
     function chargerListeClients() {

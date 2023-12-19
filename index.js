@@ -150,14 +150,16 @@ app.get('/clients', async (req, res) => {
   }
 });
 
-// Route GET pour récupérer les informations du client sélectionné
 app.get('/info_client/:nomPrenom', async (req, res) => {
   const nomPrenom = req.params.nomPrenom;
+
+  // Diviser nomPrenom en nom et prénom
+  const [nom, prenom] = nomPrenom.split(' ');
 
   try {
     const db = client.db('pharmaciedb');
     const collection = db.collection('client');
-    const clientInfo = await collection.findOne({ nom: nomPrenom });
+    const clientInfo = await collection.findOne({ nom, prenom });
 
     if (clientInfo) {
       res.status(200).json({ maladie: clientInfo.maladie });
@@ -170,6 +172,31 @@ app.get('/info_client/:nomPrenom', async (req, res) => {
   }
 });
 
+app.get('/medicament_info/:nomPrenom', async (req, res) => {
+
+  const nomPrenom = req.params.nomPrenom;
+
+  // Diviser nomPrenom en nom et prénom
+  const [nom, prenom] = nomPrenom.split(' ');
+
+  try {
+    const db = client.db('pharmaciedb');
+    const collectionClient = db.collection('client');
+    const clientInfo = await collectionClient.findOne({ nom, prenom });
+    const collectionMedicament = db.collection('medicament');
+    const medicamentInfo = await collectionMedicament.findOne({ _id : clientInfo.medicament_id })
+
+    if (clientInfo) {
+      res.status(200).json({ nom: medicamentInfo.nom });
+    } else {
+      res.status(404).json({ message: 'Médicament non trouvé' });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la récupération des informations du médicament:", error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération des informations du médicament', error: error.message });
+  }
+
+});
 
 // Ajouter des médicaments
 app.post('/ajouter_medicament', async (req, res) => {
@@ -297,7 +324,6 @@ app.delete('/supprimer_medicament', async (req, res) => {
   }
 });
 
-
 // Connexion à la base de données MongoDB
 async function run() {
   try {
@@ -306,7 +332,7 @@ async function run() {
     console.log("La BDD est connectée");
   } catch (error) {
     console.error("Erreur de connexion à MongoDB :", error);
-    throw error; 
+    throw error;
   } finally {
 
   }
