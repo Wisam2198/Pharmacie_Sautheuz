@@ -3,7 +3,8 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/accueil', (req, res) => {
-  res.render('accueil', { utilisateur: req.session.utilisateur });
+  const utilisateur = req.session.utilisateur || null; // Si l'utilisateur n'est pas défini, utilisez null
+  res.render('accueil', { utilisateur });
 });
 
 module.exports = router;

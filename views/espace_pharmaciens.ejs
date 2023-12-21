@@ -8,23 +8,21 @@
     <title>Espace pharmaciens</title>
 </head>
 
-<body>
-    <div class="bg-gray-100 m-0 overflow-hidden">
-        <!-- Barre de navigation horizontale -->
-        <nav class="bg-green-500 p-4 flex justify-between items-center text-white">
-            <div>
-                <span class="text-lg font-bold">Pharmacie Sautheuz</span>
-            </div>
-            <div class="flex items-center">
-                <input type="text" placeholder="Recherche..."
-                    class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
-                <button
-                    class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600 ml-3">
-                    <img src="<%= loupe %>" alt="Loupe Icon" class="w-4 h-4">
-                </button>
-            </div>
-        </nav>
-    </div>
+<body class="bg-gray-100">
+    <!-- Barre de navigation horizontale -->
+    <nav class="bg-green-500 p-4 flex justify-between items-center text-white">
+        <div>
+            <span class="text-lg font-bold">Pharmacie Sautheuz</span>
+        </div>
+        <div class="flex items-center">
+            <input type="text" placeholder="Recherche..."
+                class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100 text-black">
+            <button
+                class="p-2.5 rounded-full items-center bg-gradient-to-r from-green-600 to-blue-500 hover:to-blue-600 ml-3">
+                <img src="<%= loupe %>" alt="Loupe Icon" class="w-4 h-4">
+            </button>
+        </div>
+    </nav>
 
     <div class="flex">
         <!-- Barre de navigation verticale -->
@@ -36,13 +34,17 @@
             <a href="/a_propos" class="block px-4 py-1 flex-grow text-lg">À Propos</a><br><br>
             <a href="/faq" class="block px-4 py-2 flex-grow text-lg">FAQ</a><br><br>
             <a href="/conditions_utilisation" class="block px-4 py-2 flex-grow text-lg">Conditions d'Utilisation</a><br><br>
-            <a href="/politique_confidentialite" class="block px-4 py-2 flex-grow text-lg">Politique de Confidentialité</a><br><br>
+            <a href="/politique_confidentialite"
+                class="block px-4 py-2 flex-grow text-lg">Politique de Confidentialité</a><br><br>
             <a href="/deconnexion" class="block px-4 py-2 flex-grow text-lg">Déconnexion</a>
         </nav>
-
         <div class="flex-grow overflow-y-auto p-4">
-            <h1 class="text-2xl font-bold mb-4">Espace pharmaciens</h1>
-            <!-- Le contenu de la gestion des traitements sera ajouté ici -->
+            <h1 class="text-2xl font-bold mb-40 underline">Espace pharmaciens</h1>
+            <div class="bg-gray-200 p-60 shadow-md mb-4 rounded-md ">
+            <p>Bienvenue dans votre espace réservé, cher pharmacien!<br>
+            <p>Ici, vous pouvez gérer les traitements des clients, surveiller le stock de médicaments et plus encore.<br>
+            <p>N'hésitez pas à utiliser les liens de navigation sur la gauche pour accéder aux différentes fonctionnalités.</p>
+        </div>
         </div>
     </div>
 </body>

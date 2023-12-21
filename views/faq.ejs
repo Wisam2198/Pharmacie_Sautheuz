@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.css">
-    <title>FAQ</title>
+    <title>Foire aux questions</title>
 </head>
 
-<body>
+<body class="bg-gray-100">
     <div class="bg-gray-100 m-0 overflow-hidden">
         <!-- Barre de navigation horizontale -->
         <nav class="bg-green-500 p-4 flex justify-between items-center text-white">
@@ -30,21 +30,95 @@
         <!-- Barre de navigation verticale -->
         <nav class="bg-blue-900 text-white p-4 flex-shrink-0 w-1/6 h-screen overflow-y-auto">
             <a href="/espace_pharmaciens" class="block px-4 py-2 flex-grow text-lg">Espace Pharmacien</a><br><br>
-            <a href="/gestion_des_traitements" class="block px-4 py-2 flex-grow text-lg">Gestion des Traitements</a><br><br>
+            <a href="/gestion_des_traitements" class="block px-4 py-2 flex-grow text-lg">Gestion des
+                Traitements</a><br><br>
             <a href="/stock_de_medicaments" class="block px-4 py-2 flex-grow text-lg">Stock de Médicaments</a><br><br>
             <a href="/contact" class="block px-4 py-2 flex-grow text-lg">Contact</a><br><br>
             <a href="/a_propos" class="block px-4 py-1 flex-grow text-lg">À Propos</a><br><br>
             <a href="/faq" class="block px-4 py-2 flex-grow text-lg">FAQ</a><br><br>
-            <a href="/conditions_utilisation" class="block px-4 py-2 flex-grow text-lg">Conditions d'Utilisation</a><br><br>
-            <a href="/politique_confidentialite" class="block px-4 py-2 flex-grow text-lg">Politique de Confidentialité</a><br><br>
+            <a href="/conditions_utilisation" class="block px-4 py-2 flex-grow text-lg">Conditions
+                d'Utilisation</a><br><br>
+            <a href="/politique_confidentialite" class="block px-4 py-2 flex-grow text-lg">Politique de
+                Confidentialité</a><br><br>
             <a href="/deconnexion" class="block px-4 py-2 flex-grow text-lg">Déconnexion</a>
         </nav>
 
         <div class="flex-grow overflow-y-auto p-4">
-            <h1 class="text-2xl font-bold mb-4">Foire aux questions</h1>
-            <!-- Le contenu de la gestion des traitements sera ajouté ici -->
+            <h1 class="text-2xl font-bold underline mb-20">Foire aux questions</h1>
+
+            <form id="faqForm">
+                <div class="bg-gray-200 p-6 shadow-md rounded-md">
+                    <div class="mb-4">
+                        <label class="block text-lg font-semibold mb-2">Sélectionnez une question :</label>
+                        <div>
+                            <input type="radio" id="question1" name="question" value="Quel coiffeur choisir ?">
+                            <label for="question1">Quel coiffeur choisir ?</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="question2" name="question"
+                                value="Comment fonctionne la vaccination?">
+                            <label for="question2">Comment fonctionne la vaccination?</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="question3" name="question"
+                                value="Quels sont les effets secondaires des médicaments?">
+                            <label for="question3">Quels sont les effets secondaires des médicaments?</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="question4" name="question" value="Pourquoi Dawson n'est pas là ?">
+                            <label for="question4">Pourquoi Dawson n'est pas là ?</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="question5" name="question"
+                                value="Comment traiter les allergies saisonnières?">
+                            <label for="question5">Comment traiter les allergies saisonnières?</label>
+                        </div>
+                    </div>
+
+                    <button type="button" class="bg-blue-500 text-white px-4 py-2 mb-8 rounded-md hover:bg-blue-600"
+                        onclick="showResponse()">Envoyer</button>
+
+                    <div class="mb-4">
+                        <label class="block text-lg font-semibold mb-2">Réponse :</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md" id="response" rows="4"
+                            placeholder="Votre réponse ici..." readonly></textarea>
+                    </div>
+                </div>
+
+            </form>
         </div>
     </div>
+
+    <script>
+        function showResponse() {
+            var selectedQuestion = document.querySelector('input[name="question"]:checked');
+            var responseTextarea = document.getElementById('response');
+
+            if (selectedQuestion) {
+                responseTextarea.value = getResponse(selectedQuestion.value);
+            } else {
+                responseTextarea.value = "Veuillez sélectionner une question.";
+            }
+        }
+
+        function getResponse(question) {
+            // Ajouter des réponses associées à chaque question
+            switch (question) {
+                case "Quel coiffeur choisir ?":
+                    return "N'importe lequel mais surtout pas royal hair si vous tenez à ne pas finir comme Ismael.";
+                case "Comment fonctionne la vaccination?":
+                    return "La vaccination stimule le système immunitaire pour protéger le corps contre certaines maladies.";
+                case "Quels sont les effets secondaires des médicaments?":
+                    return "Les effets secondaires des médicaments varient en fonction du médicament, consultez la notice.";
+                case "Pourquoi Dawson n'est pas là ?":
+                    return "Car il a attrapé récemment le coronavirus ce qui l'empêche de venir en cours.";
+                case "Comment traiter les allergies saisonnières?":
+                    return "Le traitement des allergies saisonnières peut inclure des antihistaminiques et d'autres médicaments, consultez un professionnel de la santé.";
+                default:
+                    return "Réponse non disponible.";
+            }
+        }
+    </script>
 </body>
 
 </html>

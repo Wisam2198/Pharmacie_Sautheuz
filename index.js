@@ -61,6 +61,7 @@ const faqRoutes = require('./routes/routes_faq');
 const gestionRoutes = require('./routes/routes_gestion');
 const politiqueRoutes = require('./routes/routes_politique');
 const stockRoutes = require('./routes/routes_stock');
+const deconnexionRoutes = require('./routes/routes_deconnexion');
 
 // Utilisation des routes dans l'application
 app.use(accueilRoutes);
@@ -72,6 +73,7 @@ app.use(faqRoutes);
 app.use(gestionRoutes);
 app.use(politiqueRoutes);
 app.use(stockRoutes);
+app.use(deconnexionRoutes);
 
 // Redirection vers /accueil par défauts
 app.get('/', (req, res) => {
