@@ -152,6 +152,68 @@ app.get('/clients', async (req, res) => {
   }
 });
 
+app.get('/medicaments', async (req, res) => {
+  try {
+    const db = client.db('pharmaciedb');
+    const collection = db.collection('medicament');
+    const listeMedicaments = await collection.find({}).toArray();
+
+    // Transformation de la liste
+    const formattedList = listeMedicaments.map(medicament => ({
+      nom: medicament.nom,
+    }));
+
+    // Envoi de la liste transformée
+    res.status(200).json(formattedList);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la liste des médicaments:", error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération de la liste des médicaments', error: error.message });
+  }
+});
+
+// Route POST pour ajouter un traitement à un client
+app.post('/ajouter_traitement', async (req, res) => {
+  const { nomPrenom, maladie, medicamentId } = req.body;
+
+  // Diviser nomPrenom en nom et prénom
+  const [nom, prenom] = nomPrenom.split(' ');
+
+  try {
+    const db = client.db('pharmaciedb');
+    const collectionClient = db.collection('client');
+    const collectionMedicament = db.collection('medicament');
+
+    // Trouver le client par nom et prénom
+    const clientInfo = await collectionClient.findOne({ nom, prenom });
+
+    if (clientInfo) {
+      // Mettre à jour la maladie du client
+      await collectionClient.updateOne(
+        { _id: clientInfo._id },
+        { $push: { maladie: maladie.toString() } }
+      );
+
+      // Ajouter le traitement à la collection des traitements du client
+      const traitement = {
+        maladie: maladie,
+        medicament_id: new ObjectId(medicamentId),
+      };
+
+      await collectionClient.updateOne(
+        { _id: clientInfo._id },
+        { $push: { traitements: traitement } }
+      );
+
+      res.status(201).json({ message: 'Traitement ajouté avec succès' });
+    } else {
+      res.status(404).json({ message: 'Client non trouvé' });
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du traitement:", error);
+    res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du traitement', error: error.message });
+  }
+});
+
 app.get('/info_client/:nomPrenom', async (req, res) => {
   const nomPrenom = req.params.nomPrenom;
 
@@ -186,6 +248,7 @@ app.get('/medicament_info/:nomPrenom', async (req, res) => {
     const collectionClient = db.collection('client');
     const clientInfo = await collectionClient.findOne({ nom, prenom });
     const collectionMedicament = db.collection('medicament');
+    console.log(collectionMedicament.find({}).toArray());
     const medicamentInfo = await collectionMedicament.findOne({ _id : clientInfo.medicament_id })
 
     if (clientInfo) {

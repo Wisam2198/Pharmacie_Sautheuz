@@ -47,7 +47,9 @@
       <div class="bg-gray-200 p-60 shadow-md mb-4 rounded-md flex items-start">
         <select id="selectClient" class="p-2 border border-gray-300 rounded-md mr-20"></select>
         <button id="btnOuvrirFenetre" class="bg-gray-400 p-2 rounded-md"
-          onclick="mettreAJourPersonneSelectionnee()">Gérer ses traitements</button>          
+          onclick="mettreAJourPersonneSelectionnee()">Gérer ses traitements</button>
+        <button id="btnAjouterTraitement" class="bg-green-400 ml-8 p-2 rounded-md"
+          onclick="afficherFormulaireTraitement()">Ajouter traitement</button>
       </div>
 
       <!-- Fenêtre modale -->
@@ -62,6 +64,28 @@
           <p id="medicamentLabel"></p>
         </div>
       </div>
+      <div id="modalAjouterTraitement"
+        class="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
+        <div
+          class="bg-gradient-to-r from-blue-600 to-green-400 p-6 rounded border border-500 border-black sm:w-1/2 md:w-1/3 lg:w-1/4 sm:h-2/3 md:h-1/2 lg:h-1/3 flex flex-col relative items-center justify-center">
+          <img src="<%= croix %>" alt="Fermer" class="absolute top-4 right-4 w-6 h-6 cursor-pointer"
+            onclick="fermerModalAjouterTraitement()">
+          <!-- Ajoutez le formulaire ici -->
+          <div id="formAjouterTraitement" class="hidden">
+            <h2 class="underline">Nouveau Traitement</h2><br>
+            <label for="maladieInput">Maladie :</label>
+            <input type="text" id="maladieInput" /><br><br>
+
+            <label for="medicamentSelect">Médicament :</label>
+            <select id="medicamentSelect" class="p-2 border border-gray-300 rounded-md mr-20">
+              <!-- Les options seront ajoutées dynamiquement via JavaScript -->
+            </select><br><br>
+
+            <button id="btnAjouterTraitement" class="bg-green-400 ml-8 p-2 rounded-md"
+              onclick="ajouterTraitement()">Enregistrer Traitement</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -69,6 +93,9 @@
     const ouvrirFenetre = document.getElementById('btnOuvrirFenetre');
     const fermerFenetre = document.getElementById('btnFermerFenetre');
     const gestionTraitements = document.getElementById('gestTraitements');
+
+    const btnAjouterTraitement = document.getElementById('btnAjouterTraitement');
+    btnAjouterTraitement.addEventListener('click', afficherFormulaireTraitement);
 
     ouvrirFenetre.addEventListener('click', () => {
       gestionTraitements.classList.remove('hidden');
@@ -78,9 +105,27 @@
       gestionTraitements.classList.add('hidden');
     });
 
+    function ouvrirModalAjouterTraitement() {
+      const modalAjouterTraitement = document.getElementById('modalAjouterTraitement');
+      modalAjouterTraitement.classList.remove('hidden');
+    }
+
+    function fermerModalAjouterTraitement() {
+      const modalAjouterTraitement = document.getElementById('modalAjouterTraitement');
+      modalAjouterTraitement.classList.add('hidden');
+    }
+
+    function afficherFormulaireAjoutTraitement() {
+      const formAjouterTraitement = document.getElementById('formAjouterTraitement');
+      formAjouterTraitement.classList.remove('hidden');
+    }
+
     function afficherFormulaireTraitement() {
-      const formNouveauTraitement = document.getElementById('formNouveauTraitement');
-      formNouveauTraitement.classList.remove('hidden');
+      ouvrirModalAjouterTraitement();
+      afficherFormulaireAjoutTraitement();
+
+      // Chargez la liste des médicaments lorsque l'utilisateur souhaite ajouter un traitement
+      chargerListeMedicaments();
     }
 
     function mettreAJourPersonneSelectionnee() {
@@ -101,6 +146,7 @@
         })
         .then(clientInfo => {
           // Met à jour le texte dans la fenêtre modale avec le champ "maladie"
+
           gestionTraitementsText.textContent = `${nomPrenom} - Maladie : ${clientInfo.maladie} `;
 
           // Récupérer les informations du médicament
@@ -126,13 +172,16 @@
 
     function ajouterTraitement() {
       const maladie = document.getElementById('maladieInput').value;
-      const medicament = document.getElementById('medicamentInput').value;
 
-      // Récupérez le nom et prénom du client
+      // Récupérer la valeur sélectionnée de la liste déroulante des médicaments
+      const medicamentSelect = document.getElementById('medicamentSelect');
+      const medicamentId = medicamentSelect.value;
+
+      // Récupérer le nom et prénom du client
       const selectClient = document.getElementById('selectClient');
       const nomPrenom = selectClient.options[selectClient.selectedIndex].text;
 
-      // Envoyez une requête POST au serveur pour ajouter le traitement
+      // Envoyer une requête POST au serveur pour ajouter le traitement et mettre à jour la maladie du client
       fetch('/ajouter_traitement', {
         method: 'POST',
         headers: {
@@ -141,18 +190,23 @@
         body: JSON.stringify({
           nomPrenom: nomPrenom,
           maladie: maladie,
-          medicament: medicament,
+          medicamentId: medicamentId, // Utiliser l'identifiant unique du médicament
         }),
       })
         .then(response => response.json())
         .then(data => {
           console.log('Traitement ajouté avec succès :', data);
-          // Mettez à jour l'affichage ou effectuez d'autres actions nécessaires
+
+          // Afficher une alerte
+          alert('Traitement ajouté avec succès dans la base de données.');
+
+          // Mettre à jour l'affichage ou effectuer d'autres actions nécessaires
         })
         .catch(error => {
           console.error('Erreur lors de l\'ajout du traitement :', error);
         });
     }
+
 
     // Fonction pour charger la liste des clients
     function chargerListeClients() {
@@ -183,13 +237,45 @@
         });
     }
 
+    // Modifiez la fonction pour récupérer la liste des médicaments depuis votre serveur
+    function chargerListeMedicaments() {
+      fetch('/medicaments')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Erreur HTTP! Statut: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(listeMedicaments => {
+          const medicamentSelect = document.getElementById('medicamentSelect');
+
+          // Vide la liste déroulante
+          medicamentSelect.innerHTML = "";
+
+          // Ajoute chaque médicament à la liste déroulante
+          listeMedicaments.forEach(medicament => {
+            const option = document.createElement("option");
+            option.text = medicament.nom;
+            option.value = medicament.nom;
+            medicamentSelect.add(option);
+          });
+        })
+        .catch(error => {
+          console.error("Erreur lors de la récupération de la liste des médicaments:", error);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Chargez la liste des médicaments lors du chargement de la page
+      chargerListeMedicaments();
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
       // Chargez les clients lors du chargement de la page
       chargerListeClients();
     });
 
   </script>
-
 </body>
 
 </html>
